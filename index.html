@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>WarungKu - Buku Kasir | Pengeluaran & Pemasukan</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #eef3e9;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px 12px;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            padding: 20px 20px 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0efd5;
+            padding-bottom: 12px;
+        }
+        h1 {
+            font-size: 1.6rem;
+            color: #2a6b2f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 0.7rem;
+            background: #eaf4e4;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-weight: normal;
+            color: #3c7841;
+        }
+        .saldo-card {
+            background: linear-gradient(105deg, #1f543d, #1a6e3a);
+            border-radius: 30px;
+            padding: 14px 24px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .saldo-label {
+            font-weight: 500;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .saldo-nominal {
+            font-size: 1.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            word-break: break-word;
+            font-family: monospace;
+        }
+
+        .dual-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin: 20px 0 24px;
+        }
+        .card-table {
+            flex: 1;
+            min-width: 280px;
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #e2f0da;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .card-header {
+            background: #f9fdf6;
+            padding: 12px 16px;
+            font-weight: 700;
+            font-size: 1rem;
+            border-bottom: 2px solid #cde5bd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header-pengeluaran {
+            color: #c25733;
+            border-left: 5px solid #e67e22;
+        }
+        .header-pemasukan {
+            color: #2b7a48;
+            border-left: 5px solid #2ecc71;
+        }
+        .btn-tambah {
+            background: white;
+            border: 1px solid #c8dfbb;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #3f6842;
+        }
+        .btn-tambah:hover {
+            background: #e4f2dc;
+            transform: scale(0.96);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        th {
+            text-align: left;
+            padding: 10px 8px;
+            background-color: #fafdf7;
+            border-bottom: 1px solid #e2ecda;
+            font-weight: 600;
+            color: #3b5a34;
+        }
+        td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #eff3e9;
+            vertical-align: middle;
+        }
+        
+        /* KOLOM NOMINAL DIPERKECI L - TIDAK TERLALU PANJANG */
+        th:nth-child(1) {
+            width: auto;
+            min-width: 140px;
+        }
+        th:nth-child(2) {
+            width: 95px;
+            min-width: 85px;
+            max-width: 105px;
+        }
+        th:nth-child(3) {
+            width: 40px;
+            text-align: center;
+        }
+        td:nth-child(2) {
+            width: 95px;
+            min-width: 85px;
+            max-width: 105px;
+        }
+        td:nth-child(3) {
+            width: 40px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 6px 6px;
+            border: 1px solid #d2e2c6;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            background: white;
+            transition: 0.15s;
+        }
+        input.nominal-input {
+            text-align: right;
+            font-weight: 500;
+            font-size: 0.75rem;
+            padding: 6px 5px;
+            font-family: monospace;
+            letter-spacing: 0px;
+        }
+        input.nama-input {
+            font-size: 0.75rem;
+            padding: 6px 6px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #6fbf4c;
+            box-shadow: 0 0 0 2px rgba(111,191,76,0.2);
+        }
+
+        .btn-hapus {
+            background: #fff2ef;
+            border: none;
+            border-radius: 30px;
+            width: 28px;
+            height: 28px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #c25733;
+            font-weight: bold;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-hapus:hover {
+            background: #fee0d6;
+            color: #a33f1a;
+        }
+
+        .total-row {
+            background: #fefae6;
+            font-weight: bold;
+            border-top: 2px solid #d0e2c0;
+        }
+        .total-row td {
+            padding: 10px 8px;
+            font-size: 0.8rem;
+        }
+        .footer-total {
+            text-align: right;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        .empty-row td {
+            text-align: center;
+            padding: 24px;
+            color: #a7bf97;
+            font-style: italic;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid #e2efd8;
+        }
+        button {
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.75rem;
+        }
+        .btn-outline {
+            background: #f0f5ec;
+            color: #3a6740;
+        }
+        .btn-solid {
+            background: #2b6e3c;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-danger-light {
+            background: #f9e1d8;
+            color: #bb5433;
+        }
+        .btn-solid:hover, .btn-outline:hover, .btn-danger-light:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+        .catatan {
+            font-size: 0.65rem;
+            color: #83a075;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .format-contoh {
+            background: #f3f9ef;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            color: #4b7542;
+        }
+
+        @media (max-width: 780px) {
+            .app-container {
+                padding: 14px;
+            }
+            h1 { font-size: 1.2rem; }
+            .saldo-nominal { font-size: 1.2rem; }
+            th, td { font-size: 0.7rem; padding: 6px 4px; }
+            
+            /* mobile: kolom nominal tetap kecil */
+            th:nth-child(2), td:nth-child(2) {
+                width: 75px;
+                min-width: 70px;
+            }
+            input.nominal-input {
+                font-size: 0.7rem;
+                padding: 5px 3px;
+            }
+            input.nama-input {
+                font-size: 0.7rem;
+            }
+            .btn-tambah { padding: 3px 10px; font-size: 0.6rem; }
+            button { padding: 5px 12px; font-size: 0.7rem; }
+            .btn-hapus {
+                width: 24px;
+                height: 24px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .dual-layout {
+                flex-direction: column;
+                gap: 18px;
+            }
+            .saldo-nominal {
+                font-size: 1rem;
+            }
+            th:nth-child(2), td:nth-child(2) {
+                width: 70px;
+                min-width: 65px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1>🧾 Warung Kasir <small>Pemasukan & Pengeluaran</small></h1>
+        <div class="format-contoh">💡 Format: 100000 atau 100.000</div>
+    </div>
+
+    <div class="saldo-card">
+        <span class="saldo-label">💵 SALDO BERSIH (Pemasukan - Pengeluaran)</span>
+        <span class="saldo-nominal" id="saldoBersih">0</span>
+    </div>
+
+    <div class="dual-layout">
+        <!-- SISI PENGELUARAN -->
+        <div class="card-table">
+            <div class="card-header header-pengeluaran">
+                <span>📉 PENGELUARAN</span>
+                <button class="btn-tambah" id="tambahPengeluaranBtn">+ Tambah</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>NAMA PRODUK</th><th>NOMINAL</th><th></th></tr>
+                    </thead>
+                    <tbody id="bodyPengeluaran">
+                        <tr class="empty-row"><td colspan="3">Belum ada data pengeluaran</td></tr>
+                    </tbody>
+                    <tfoot id="footerPengeluaran" style="display: none;">
+                        <tr class="total-row"><td style="text-align: right;">TOTAL PENGELUARAN</td><td id="totalPengeluaranVal" class="footer-total">0</td><td></td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- SISI PEMASUKAN -->
+        <div class="card-table">
+            <div class="card-header header-pemasukan">
+                <span>📈 PEMASUKAN</span>
+                <button class="btn-tambah" id="tambahPemasukanBtn">+ Tambah</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>NAMA PRODUK</th><th>NOMINAL</th><th></th></tr>
+                    </thead>
+                    <tbody id="bodyPemasukan">
+                        <tr class="empty-row"><td colspan="3">Belum ada data pemasukan</td></tr>
+                    </tbody>
+                    <tfoot id="footerPemasukan" style="display: none;">
+                        <tr class="total-row"><td style="text-align: right;">TOTAL PEMASUKAN</td><td id="totalPemasukanVal" class="footer-total">0</td><td></td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn-outline" id="resetContohBtn">🔄 Reset Contoh</button>
+        <button class="btn-danger-light" id="hapusSemuaBtn">🗑 Hapus Semua</button>
+        <button class="btn-solid" id="simpanBtn">💾 Simpan Data</button>
+    </div>
+    <div class="catatan">
+        ✏️ Klik langsung pada kolom untuk mengedit. Kolom nominal sudah diperkecil.<br>
+        📝 Format: <strong>100000</strong> atau <strong>100.000</strong> (otomatis pakai titik)
+    </div>
+</div>
+
+<script>
+    let pengeluaran = [];
+    let pemasukan = [];
+
+    function formatAngka(angka) {
+        if (angka === undefined || angka === null || isNaN(angka)) angka = 0;
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function parseAngkaDariInput(str) {
+        if (!str && str !== 0) return 0;
+        let cleaned = String(str).replace(/\./g, '').replace(/\s/g, '');
+        let num = parseInt(cleaned, 10);
+        if (isNaN(num)) return 0;
+        return num;
+    }
+
+    function totalArray(arr) {
+        return arr.reduce((sum, i) => sum + (i.nominal || 0), 0);
+    }
+
+    function hitungSaldo() {
+        return totalArray(pemasukan) - totalArray(pengeluaran);
+    }
+
+    function refreshUI() {
+        renderPengeluaranTable();
+        renderPemasukanTable();
+        const saldo = hitungSaldo();
+        document.getElementById('saldoBersih').innerText = formatAngka(saldo);
+    }
+
+    function renderPengeluaranTable() {
+        const tbody = document.getElementById('bodyPengeluaran');
+        const footer = document.getElementById('footerPengeluaran');
+        if (!tbody) return;
+
+        if (pengeluaran.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="3">📭 Tidak ada pengeluaran</td></tr>';
+            footer.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        pengeluaran.forEach(item => {
+            html += `
+                <tr data-id="${item.id}" data-jenis="pengeluaran">
+                    <td><input type="text" class="edit-nama nama-input" value="${escapeHtml(item.nama)}" data-id="${item.id}" data-jenis="pengeluaran" placeholder="Nama produk"></td>
+                    <td><input type="text" class="edit-nominal nominal-input" value="${formatAngka(item.nominal)}" data-id="${item.id}" data-jenis="pengeluaran" placeholder="0" inputmode="numeric"></td>
+                    <td style="text-align:center;"><button class="btn-hapus" data-id="${item.id}" data-jenis="pengeluaran">✖</button></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        footer.style.display = 'table-footer-group';
+        const totalPeng = totalArray(pengeluaran);
+        document.getElementById('totalPengeluaranVal').innerHTML = formatAngka(totalPeng);
+        attachEventsToInputs();
+    }
+
+    function renderPemasukanTable() {
+        const tbody = document.getElementById('bodyPemasukan');
+        const footer = document.getElementById('footerPemasukan');
+        if (!tbody) return;
+
+        if (pemasukan.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="3">📭 Tidak ada pemasukan</td></tr>';
+            footer.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        pemasukan.forEach(item => {
+            html += `
+                <tr data-id="${item.id}" data-jenis="pemasukan">
+                    <td><input type="text" class="edit-nama nama-input" value="${escapeHtml(item.nama)}" data-id="${item.id}" data-jenis="pemasukan" placeholder="Nama produk"></td>
+                    <td><input type="text" class="edit-nominal nominal-input" value="${formatAngka(item.nominal)}" data-id="${item.id}" data-jenis="pemasukan" placeholder="0" inputmode="numeric"></td>
+                    <td style="text-align:center;"><button class="btn-hapus" data-id="${item.id}" data-jenis="pemasukan">✖</button></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        footer.style.display = 'table-footer-group';
+        const totalPem = totalArray(pemasukan);
+        document.getElementById('totalPemasukanVal').innerHTML = formatAngka(totalPem);
+        attachEventsToInputs();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function attachEventsToInputs() {
+        document.querySelectorAll('.edit-nama').forEach(inp => {
+            inp.removeEventListener('change', handleNamaChange);
+            inp.addEventListener('change', handleNamaChange);
+        });
+        document.querySelectorAll('.edit-nominal').forEach(inp => {
+            inp.removeEventListener('blur', handleNominalBlur);
+            inp.addEventListener('blur', handleNominalBlur);
+        });
+        document.querySelectorAll('.btn-hapus').forEach(btn => {
+            btn.removeEventListener('click', handleDelete);
+            btn.addEventListener('click', handleDelete);
+        });
+    }
+
+    function handleNamaChange(e) {
+        const id = parseInt(e.target.dataset.id);
+        const jenis = e.target.dataset.jenis;
+        const newNama = e.target.value.trim() || "-";
+        if (jenis === 'pengeluaran') {
+            const item = pengeluaran.find(i => i.id === id);
+            if (item) item.nama = newNama;
+        } else if (jenis === 'pemasukan') {
+            const item = pemasukan.find(i => i.id === id);
+            if (item) item.nama = newNama;
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function handleNominalBlur(e) {
+        const id = parseInt(e.target.dataset.id);
+        const jenis = e.target.dataset.jenis;
+        let rawValue = e.target.value;
+        let numericValue = parseAngkaDariInput(rawValue);
+        if (isNaN(numericValue)) numericValue = 0;
+        
+        if (jenis === 'pengeluaran') {
+            const item = pengeluaran.find(i => i.id === id);
+            if (item) item.nominal = numericValue;
+        } else if (jenis === 'pemasukan') {
+            const item = pemasukan.find(i => i.id === id);
+            if (item) item.nominal = numericValue;
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function handleDelete(e) {
+        const id = parseInt(e.target.dataset.id);
+        const jenis = e.target.dataset.jenis;
+        if (jenis === 'pengeluaran') {
+            pengeluaran = pengeluaran.filter(i => i.id !== id);
+        } else if (jenis === 'pemasukan') {
+            pemasukan = pemasukan.filter(i => i.id !== id);
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function tambahPengeluaran() {
+        const newId = Date.now() + Math.floor(Math.random() * 10000);
+        pengeluaran.push({ id: newId, nama: "Produk baru", nominal: 0 });
+        saveToLocal();
+        refreshUI();
+    }
+
+    function tambahPemasukan() {
+        const newId = Date.now() + Math.floor(Math.random() * 10000) + 100000;
+        pemasukan.push({ id: newId, nama: "Produk baru", nominal: 0 });
+        saveToLocal();
+        refreshUI();
+    }
+
+    function resetContoh() {
+        pengeluaran = [
+            { id: 1001, nama: "Beras", nominal: 135000 },
+            { id: 1002, nama: "Gula", nominal: 75000 },
+            { id: 1003, nama: "Minyak", nominal: 42000 },
+            { id: 1004, nama: "Kopi", nominal: 58000 }
+        ];
+        pemasukan = [
+            { id: 2001, nama: "Nasi", nominal: 250000 },
+            { id: 2002, nama: "Kopi", nominal: 98000 },
+            { id: 2003, nama: "Rokok", nominal: 340000 },
+            { id: 2004, nama: "Camilan", nominal: 127000 }
+        ];
+        saveToLocal();
+        refreshUI();
+    }
+
+    function hapusSemua() {
+        if (confirm('⚠️ Hapus seluruh data? Tidak bisa dikembalikan.')) {
+            pengeluaran = [];
+            pemasukan = [];
+            saveToLocal();
+            refreshUI();
+        }
+    }
+
+    function saveToLocal() {
+        localStorage.setItem('warung_kasir_dual', JSON.stringify({ pengeluaran, pemasukan }));
+    }
+
+    function loadFromLocal() {
+        const saved = localStorage.getItem('warung_kasir_dual');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                pengeluaran = parsed.pengeluaran || [];
+                pemasukan = parsed.pemasukan || [];
+                if (pengeluaran.length === 0 && pemasukan.length === 0) resetContoh();
+                else refreshUI();
+            } catch(e) { resetContoh(); }
+        } else { resetContoh(); }
+        refreshUI();
+    }
+
+    document.getElementById('tambahPengeluaranBtn').addEventListener('click', tambahPengeluaran);
+    document.getElementById('tambahPemasukanBtn').addEventListener('click', tambahPemasukan);
+    document.getElementById('resetContohBtn').addEventListener('click', resetContoh);
+    document.getElementById('hapusSemuaBtn').addEventListener('click', hapusSemua);
+    document.getElementById('simpanBtn').addEventListener('click', () => { saveToLocal(); alert('✅ Data tersimpan'); });
+
+    loadFromLocal();
+</script>
+</body>
+</html>
