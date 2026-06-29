@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Laporan Penjualan Harian</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edf5 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 16px 10px;
+        }
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+                0 0 0 1px rgba(0, 0, 0, 0.05);
+            padding: 20px 16px 30px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            appearance: none;
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        td input {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 4px 2px;
+            width: 100%;
+            outline: none;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #1e293b;
+            text-align: center;
+            min-width: 20px;
+        }
+        td input:hover, td input:focus {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        td input::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
+            opacity: 0.7;
+            font-size: 12px;
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.2);
+            flex-shrink: 0;
+        }
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin: 0;
+            line-height: 1.2;
+        }
+        h1 span {
+            font-weight: 400;
+            color: #64748b;
+            font-size: 14px;
+            letter-spacing: 0;
+            display: inline-block;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tanggal-info {
+            font-size: 12px;
+            color: #475569;
+            background: rgba(241, 245, 249, 0.8);
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .tanggal-info::before {
+            content: "📅";
+            font-size: 14px;
+        }
+        
+        .reset-notification {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: none;
+            font-weight: 600;
+            font-size: 13px;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.5s ease;
+        }
+        .reset-notification.show {
+            display: flex;
+        }
+        .reset-notification .close-reset {
+            margin-left: auto;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #92400e;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            align-items: center;
+        }
+        .toolbar button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            white-space: nowrap;
+        }
+        .toolbar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.15);
+        }
+        .toolbar button:active {
+            transform: translateY(0px);
+        }
+        .toolbar button.primary {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.3);
+        }
+        .toolbar button.primary:hover {
+            box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.4);
+            transform: translateY(-2px);
+        }
+        .toolbar button.history {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px -4px rgba(124, 58, 237, 0.3);
+        }
+        .toolbar button.history:hover {
+            box-shadow: 0 8px 24px -6px rgba(124, 58, 237, 0.4);
+            transform: translateY(-2px);
+        }
+        .toolbar button.reset {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px -4px rgba(239, 68, 68, 0.3);
+        }
+        .toolbar button.reset:hover {
+            box-shadow: 0 8px 24px -6px rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 16px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 700px;
+        }
+        
+        th, td {
+            border-right: none;
+            padding: 8px 4px;
+        }
+        
+        th, td {
+            text-align: center !important;
+        }
+        
+        th {
+            background: #f8fafc;
+            color: #0f172a;
+            border-bottom: 2px solid #dbe0e8;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            color: #1e293b;
+            padding: 10px 4px;
+        }
+        
+        td {
+            border-bottom: 1px solid #f1f4f9;
+            vertical-align: middle;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #1e293b;
+            padding: 6px 2px;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background: #fafbfc;
+        }
+        
+        .col-no {
+            width: 30px;
+            color: #94a3b8;
+            font-size: 12px !important;
+            flex-shrink: 0;
+        }
+        .col-no th {
+            padding: 10px 2px;
+            font-size: 12px !important;
+        }
+        .col-no td {
+            padding: 6px 2px;
+            color: #94a3b8;
+            font-size: 12px !important;
+        }
+        
+        .col-nama {
+            min-width: 120px;
+            width: 160px;
+        }
+        .col-nama input {
+            width: 100%;
+            border: none !important;
+            padding: 4px 6px;
+            border-radius: 0 !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #0f172a;
+            background: transparent !important;
+            transition: all 0.2s;
+            outline: none;
+            text-align: center;
+            box-shadow: none !important;
+            min-width: 60px;
+        }
+        .col-nama input:hover, .col-nama input:focus {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .col-nama input::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
+            font-size: 11px;
+        }
+        
+        .col-jumlah {
+            width: 38px;
+            min-width: 32px;
+        }
+        .col-jumlah input {
+            width: 32px;
+            border: none !important;
+            padding: 4px 1px;
+            border-radius: 0 !important;
+            font-size: 13px !important;
+            text-align: center;
+            color: #0f172a;
+            background: transparent !important;
+            transition: all 0.2s;
+            outline: none;
+            font-weight: 700 !important;
+            box-shadow: none !important;
+            min-width: 24px;
+        }
+        .col-jumlah input:hover, .col-jumlah input:focus {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .col-jumlah input::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
+            font-size: 11px;
+        }
+        
+        .col-terbayar {
+            width: 36px;
+            min-width: 30px;
+        }
+        .col-terbayar input {
+            width: 30px;
+            border: none !important;
+            padding: 4px 1px;
+            border-radius: 0 !important;
+            font-size: 13px !important;
+            text-align: center;
+            color: #065f46;
+            background: transparent !important;
+            transition: all 0.2s;
+            outline: none;
+            font-weight: 700 !important;
+            box-shadow: none !important;
+            min-width: 22px;
+        }
+        .col-terbayar input:hover, .col-terbayar input:focus {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .col-terbayar input::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
+            font-size: 11px;
+        }
+        
+        .col-belum-bayar {
+            font-size: 13px !important;
+            width: 34px;
+            min-width: 28px;
+        }
+        .col-belum-bayar .lunas {
+            color: #10b981;
+            font-size: 14px;
+        }
+        .col-belum-bayar .belum {
+            color: #dc2626;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        
+        .col-harga-unit {
+            min-width: 80px;
+            width: 100px;
+        }
+        .col-harga-unit input {
+            width: 80px;
+            border: none !important;
+            padding: 4px 3px;
+            border-radius: 0 !important;
+            font-size: 13px !important;
+            text-align: center;
+            color: #0f172a;
+            background: transparent !important;
+            transition: all 0.2s;
+            outline: none;
+            font-weight: 700 !important;
+            box-shadow: none !important;
+            min-width: 60px;
+        }
+        .col-harga-unit input:hover, .col-harga-unit input:focus {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .col-harga-unit input::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
+            font-size: 11px;
+        }
+        
+        .col-subtotal-bayar {
+            font-size: 13px !important;
+            min-width: 80px;
+            width: 100px;
+            color: #0f172a;
+        }
+        .col-subtotal-bayar td {
+            color: #0f172a;
+            font-size: 13px !important;
+        }
+        
+        .col-subtotal-bon {
+            font-size: 13px !important;
+            min-width: 80px;
+            width: 100px;
+        }
+        .col-subtotal-bon td {
+            font-size: 13px !important;
+        }
+        .col-subtotal-bon td[style*="color: #10b981"] {
+            color: #10b981 !important;
+        }
+        .col-subtotal-bon td[style*="color: #dc2626"] {
+            color: #dc2626 !important;
+        }
+        
+        .col-tambah, .col-kurang {
+            min-width: 30px;
+            width: 34px;
+        }
+        .col-tambah th, .col-kurang th {
+            padding: 10px 2px;
+            font-size: 13px !important;
+        }
+        .col-tambah td, .col-kurang td {
+            padding: 4px 1px;
+        }
+        .btn-tambah, .btn-kurang {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .btn-tambah {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 2px 8px -2px rgba(16, 185, 129, 0.3);
+        }
+        .btn-tambah:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 16px -4px rgba(16, 185, 129, 0.4);
+        }
+        .btn-kurang {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 2px 8px -2px rgba(239, 68, 68, 0.3);
+        }
+        .btn-kurang:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 16px -4px rgba(239, 68, 68, 0.4);
+        }
+        .btn-tambah:active, .btn-kurang:active {
+            transform: scale(0.9);
+        }
+        
+        .footer-stats {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 12px;
+            color: #1e293b;
+            gap: 8px 12px;
+        }
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .stats-item .label {
+            font-weight: 500;
+            color: #64748b;
+            font-size: 11px;
+        }
+        .stats-item .value {
+            font-weight: 700;
+            background: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+        .stats-item .value.terbayar-value {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+        .stats-item .value.penjualan-value {
+            background: #fef3c7;
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+        .stats-item .value.bon-value {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+        
+        .keterangan {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+            text-align: center;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 10px;
+        }
+        .keterangan span {
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin: 0 2px;
+            font-weight: 600;
+            font-size: 10px;
+        }
+        .bottom-info {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .bottom-info .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        .bottom-info .dot.warning {
+            background: #f59e0b;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .bottom-info #tanggalSaatIni {
+            font-weight: 600;
+            color: #475569;
+        }
+        .bottom-info .status-auto {
+            font-weight: 600;
+            color: #10b981;
+            font-size: 10px;
+            background: #ecfdf5;
+            padding: 2px 10px;
+            border-radius: 16px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px) scale(0.95);
+            background: #0f172a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            backdrop-filter: blur(10px);
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+            padding: 16px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #0f172a;
+            border-bottom: 2px solid #f1f4f9;
+            padding-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-content .close-modal {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .modal-content .close-modal:hover {
+            color: #0f172a;
+            background: #f1f5f9;
+        }
+        .history-list {
+            list-style: none;
+            padding: 0;
+        }
+        .history-list li {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f4f9;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        .history-list li:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+        .history-list li .tanggal-item {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 13px;
+        }
+        .history-list li .jumlah-item {
+            color: #94a3b8;
+            font-size: 12px;
+            background: #f1f5f9;
+            padding: 2px 10px;
+            border-radius: 16px;
+        }
+        .history-list li .active-date {
+            color: #8b5cf6;
+            font-weight: 700;
+        }
+        .history-list li .today-tag {
+            background: #10b981;
+            color: white;
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 16px;
+            font-weight: 600;
+        }
+        .history-empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 30px 0;
+        }
+        .modal-footer {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 2px solid #f1f4f9;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .modal-footer button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .modal-footer .btn-secondary {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .modal-footer .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .modal-footer .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 12px -4px rgba(239, 68, 68, 0.3);
+        }
+        .modal-footer .btn-danger:hover {
+            box-shadow: 0 8px 20px -6px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 992px) {
+            .container { padding: 16px 12px; }
+            table { min-width: 650px; font-size: 12px; }
+            th { font-size: 12px !important; padding: 8px 3px; }
+            td { font-size: 12px !important; padding: 5px 2px; }
+            td input { font-size: 12px !important; }
+            .col-nama { min-width: 100px; width: 130px; }
+            .col-harga-unit { min-width: 70px; width: 85px; }
+            .col-harga-unit input { width: 65px; font-size: 12px !important; }
+            .col-subtotal-bayar, .col-subtotal-bon { min-width: 70px; width: 85px; font-size: 12px !important; }
+            .col-subtotal-bayar td, .col-subtotal-bon td { font-size: 12px !important; }
+            .btn-tambah, .btn-kurang { width: 22px; height: 22px; font-size: 11px; }
+            h1 { font-size: 18px; }
+            .header-icon { width: 36px; height: 36px; font-size: 16px; }
+            .footer-stats { font-size: 11px; padding: 10px 14px; }
+            .stats-item .value { font-size: 11px; padding: 2px 8px; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px 6px; }
+            .container { padding: 12px 8px; border-radius: 18px; }
+            .header-section { flex-direction: column; align-items: stretch; gap: 8px; }
+            .header-left { justify-content: center; }
+            .header-right { justify-content: center; }
+            .tanggal-info { font-size: 11px; padding: 4px 12px; justify-content: center; }
+            h1 { font-size: 16px; text-align: center; }
+            h1 span { font-size: 12px; }
+            .header-icon { width: 32px; height: 32px; font-size: 14px; }
+            .toolbar { justify-content: center; gap: 6px; }
+            .toolbar button { padding: 6px 12px; font-size: 11px; }
+            table { min-width: 580px; font-size: 11px; }
+            th { font-size: 10px !important; padding: 6px 2px; }
+            td { font-size: 11px !important; padding: 4px 1px; }
+            td input { font-size: 11px !important; padding: 2px 1px; }
+            .col-no { width: 24px; font-size: 10px !important; }
+            .col-no th { font-size: 10px !important; padding: 6px 1px; }
+            .col-no td { font-size: 10px !important; padding: 4px 1px; }
+            .col-nama { min-width: 80px; width: 100px; }
+            .col-nama input { font-size: 11px !important; padding: 2px 4px; min-width: 40px; }
+            .col-nama input::placeholder { font-size: 10px; }
+            .col-jumlah { width: 32px; min-width: 26px; }
+            .col-jumlah input { width: 26px; font-size: 11px !important; padding: 2px 1px; min-width: 18px; }
+            .col-jumlah input::placeholder { font-size: 10px; }
+            .col-terbayar { width: 30px; min-width: 24px; }
+            .col-terbayar input { width: 24px; font-size: 11px !important; padding: 2px 1px; min-width: 16px; }
+            .col-terbayar input::placeholder { font-size: 10px; }
+            .col-belum-bayar { width: 28px; min-width: 22px; font-size: 11px !important; }
+            .col-belum-bayar .lunas { font-size: 12px; }
+            .col-belum-bayar .belum { font-size: 11px; }
+            .col-harga-unit { min-width: 60px; width: 70px; }
+            .col-harga-unit input { width: 55px; font-size: 11px !important; padding: 2px 2px; min-width: 40px; }
+            .col-harga-unit input::placeholder { font-size: 10px; }
+            .col-subtotal-bayar, .col-subtotal-bon { min-width: 55px; width: 65px; font-size: 10px !important; }
+            .col-subtotal-bayar td, .col-subtotal-bon td { font-size: 10px !important; }
+            .col-tambah, .col-kurang { min-width: 24px; width: 28px; }
+            .col-tambah th, .col-kurang th { padding: 6px 1px; font-size: 10px !important; }
+            .col-tambah td, .col-kurang td { padding: 3px 1px; }
+            .btn-tambah, .btn-kurang { width: 18px; height: 18px; font-size: 10px; }
+            .footer-stats { font-size: 10px; padding: 8px 10px; gap: 4px 8px; }
+            .stats-item .label { font-size: 9px; }
+            .stats-item .value { font-size: 10px; padding: 1px 6px; }
+            .keterangan { font-size: 10px; padding-top: 8px; }
+            .keterangan span { font-size: 9px; padding: 1px 6px; }
+            .bottom-info { font-size: 10px; }
+            .bottom-info .status-auto { font-size: 9px; padding: 1px 8px; }
+            .reset-notification { font-size: 12px; padding: 8px 12px; }
+            .toast { font-size: 12px; padding: 10px 18px; bottom: 16px; }
+            .modal-content { padding: 18px; margin: 10px; }
+            .modal-content h2 { font-size: 18px; }
+            .history-list li { padding: 10px 12px; font-size: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            table { min-width: 500px; font-size: 10px; }
+            th { font-size: 9px !important; padding: 5px 1px; }
+            td { font-size: 10px !important; padding: 3px 1px; }
+            td input { font-size: 10px !important; padding: 2px 1px; }
+            .col-nama { min-width: 60px; width: 75px; }
+            .col-nama input { font-size: 10px !important; padding: 2px 2px; min-width: 30px; }
+            .col-jumlah { width: 26px; min-width: 20px; }
+            .col-jumlah input { width: 20px; font-size: 10px !important; min-width: 14px; }
+            .col-terbayar { width: 24px; min-width: 18px; }
+            .col-terbayar input { width: 18px; font-size: 10px !important; min-width: 12px; }
+            .col-belum-bayar { width: 22px; min-width: 16px; font-size: 10px !important; }
+            .col-belum-bayar .belum { font-size: 10px; }
+            .col-harga-unit { min-width: 50px; width: 60px; }
+            .col-harga-unit input { width: 45px; font-size: 10px !important; min-width: 30px; }
+            .col-subtotal-bayar, .col-subtotal-bon { min-width: 45px; width: 55px; font-size: 9px !important; }
+            .col-subtotal-bayar td, .col-subtotal-bon td { font-size: 9px !important; }
+            .col-tambah, .col-kurang { min-width: 20px; width: 24px; }
+            .btn-tambah, .btn-kurang { width: 16px; height: 16px; font-size: 9px; }
+            .toolbar button { padding: 4px 10px; font-size: 10px; }
+            .toolbar button span { display: none; }
+            .header-icon { width: 28px; height: 28px; font-size: 12px; }
+            h1 { font-size: 14px; }
+            h1 span { font-size: 10px; }
+            .footer-stats { font-size: 9px; padding: 6px 8px; }
+            .stats-item .value { font-size: 9px; padding: 1px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <div class="header-left">
+            <div class="header-icon">📊</div>
+            <h1>Laporan Penjualan <span>Harian</span></h1>
+        </div>
+        <div class="header-right">
+            <div class="tanggal-info" id="tanggalDisplay"></div>
+        </div>
+    </div>
+
+    <div class="reset-notification" id="resetNotification">
+        <span>🔄</span>
+        <span id="resetMessage">Data telah direset otomatis untuk hari ini!</span>
+        <button class="close-reset" onclick="closeResetNotification()">✕</button>
+    </div>
+
+    <div class="toolbar">
+        <button class="primary" onclick="tambahBaris()">➕ <span>Tambah Item</span></button>
+        <button class="history" onclick="openHistory()">📅 <span>Riwayat</span></button>
+        <button class="reset" onclick="resetHariIni()">🔄 <span>Reset</span></button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="penjualanTable">
+            <thead>
+                <tr>
+                    <th class="col-no">No</th>
+                    <th class="col-nama">Menu / Item</th>
+                    <th class="col-jumlah">Jual</th>
+                    <th class="col-terbayar">Bayar</th>
+                    <th class="col-belum-bayar">Bon</th>
+                    <th class="col-harga-unit">Harga/Unit</th>
+                    <th class="col-subtotal-bayar">Sub Bayar</th>
+                    <th class="col-subtotal-bon">Sub Bon</th>
+                    <th class="col-tambah">+</th>
+                    <th class="col-kurang">−</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="footer-stats">
+        <div class="stats-item">
+            <span class="label">📦 Total Jual</span>
+            <span class="value" id="totalBarang">0</span>
+        </div>
+        <div class="stats-item">
+            <span class="label">💰 Sub Bayar</span>
+            <span class="value penjualan-value" id="totalPendapatan">Rp 0</span>
+        </div>
+        <div class="stats-item">
+            <span class="label">✅ Bayar</span>
+            <span class="value terbayar-value" id="totalTerbayar">0</span>
+        </div>
+        <div class="stats-item">
+            <span class="label">⚠️ Bon</span>
+            <span class="value bon-value" id="totalBon">Rp 0</span>
+        </div>
+        <div class="stats-item">
+            <span class="label">📋 Menu</span>
+            <span class="value" id="jumlahMenu">0</span>
+        </div>
+    </div>
+
+    <div class="keterangan">
+        <span>➕</span> Jual +1 &nbsp;|&nbsp; <span>➖</span> Bayar +1 &nbsp;|&nbsp; <span>📊</span> Bon = Jual − Bayar &nbsp;|&nbsp; <span>💰</span> Sub Bon = Bon × Harga
+    </div>
+    <div class="bottom-info">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Auto Save</span>
+        <span class="status-auto">🔄 Auto Reset</span>
+        &nbsp;·&nbsp; <span id="tanggalSaatIni"></span>
+    </div>
+</div>
+
+<div class="modal-overlay" id="historyModal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeHistory()">✕</button>
+        <h2>📅 Riwayat 1 Bulan</h2>
+        <div id="historyList"></div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeHistory()">Tutup</button>
+            <button class="btn-danger" onclick="clearAllHistory()">Hapus Semua</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    function getToday() {
+        var now = new Date();
+        var y = now.getFullYear();
+        var m = String(now.getMonth() + 1).padStart(2, '0');
+        var d = String(now.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + d;
+    }
+
+    function formatTanggal(tgl) {
+        var parts = tgl.split('-');
+        var bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        return parts[2] + ' ' + bulan[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    }
+
+    function formatRupiah(angka) {
+        if (angka === undefined || angka === null || isNaN(angka) || angka === 0) {
+            return 'Rp 0';
+        }
+        return 'Rp ' + Math.round(angka).toLocaleString('id-ID');
+    }
+
+    function formatRupiahInput(angka) {
+        if (angka === undefined || angka === null || isNaN(angka) || angka === 0) {
+            return '';
+        }
+        return 'Rp ' + Math.round(angka).toLocaleString('id-ID');
+    }
+
+    function updateTanggalDisplay() {
+        var now = new Date();
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        var bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        var tanggalStr = hari[now.getDay()] + ', ' + now.getDate() + ' ' + bulan[now.getMonth()] + ' ' + now.getFullYear();
+        document.getElementById('tanggalDisplay').textContent = tanggalStr;
+        document.getElementById('tanggalSaatIni').textContent = 'Tanggal: ' + getToday();
+    }
+    updateTanggalDisplay();
+
+    // ============= DEFAULT DATA KOSONG =============
+    var defaultData = [
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" },
+        { nama: "", jumlah: '', terbayar: '', hargaUnit: "" }
+    ];
+
+    var items = [];
+    var currentDate = getToday();
+
+    function getStorageKey(tanggal) {
+        return 'penjualan_' + tanggal;
+    }
+
+    function getAllDates() {
+        var keys = Object.keys(localStorage);
+        var dates = [];
+        for (var i = 0; i < keys.length; i++) {
+            if (keys[i].startsWith('penjualan_')) {
+                var tgl = keys[i].replace('penjualan_', '');
+                if (tgl.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    dates.push(tgl);
+                }
+            }
+        }
+        var today = getToday();
+        if (dates.indexOf(today) === -1) {
+            dates.push(today);
+        }
+        dates.sort().reverse();
+        return dates;
+    }
+
+    function loadData(tanggal) {
+        var key = getStorageKey(tanggal);
+        var saved = localStorage.getItem(key);
+        if (saved) {
+            try {
+                items = JSON.parse(saved);
+                if (!items || items.length === 0) throw new Error('kosong');
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].terbayar === undefined) items[i].terbayar = '';
+                    if (items[i].hargaUnit === undefined) items[i].hargaUnit = "";
+                    if (items[i].jumlah === undefined) items[i].jumlah = '';
+                    if (items[i].nama === undefined) items[i].nama = "";
+                }
+                return true;
+            } catch (e) {
+                items = JSON.parse(JSON.stringify(defaultData));
+                return false;
+            }
+        } else {
+            items = JSON.parse(JSON.stringify(defaultData));
+            return false;
+        }
+    }
+
+    function saveToStorage(tanggal) {
+        var key = getStorageKey(tanggal);
+        localStorage.setItem(key, JSON.stringify(items));
+    }
+
+    function hitungData(jumlah, terbayar, hargaUnit) {
+        var qty = parseInt(jumlah) || 0;
+        var bayar = parseInt(terbayar.toString().replace(/[^0-9]/g, '')) || 0;
+        var harga = parseFloat(hargaUnit.toString().replace(/[^0-9.]/g, '')) || 0;
+        var belum = qty - bayar;
+        var subtotalBayar = qty * harga;
+        var subtotalBon = belum * harga;
+        return { qty: qty, bayar: bayar, harga: harga, belum: belum, subtotalBayar: subtotalBayar, subtotalBon: subtotalBon };
+    }
+
+    function resetJualBayar() {
+        for (var i = 0; i < items.length; i++) {
+            items[i].jumlah = '';
+            items[i].terbayar = '';
+        }
+        renderTable();
+        saveToStorage(currentDate);
+    }
+
+    function updateRow(tr, index) {
+        var item = items[index];
+        var data = hitungData(item.jumlah, item.terbayar, item.hargaUnit);
+
+        var tdBelum = tr.querySelector('.col-belum-bayar');
+        if (tdBelum) {
+            if (data.belum <= 0 && data.qty > 0) {
+                tdBelum.innerHTML = '<span class="lunas">✅</span>';
+            } else if (data.qty === 0 && data.bayar === 0) {
+                tdBelum.innerHTML = '<span style="color:#94a3b8;">-</span>';
+            } else {
+                tdBelum.innerHTML = '<span class="belum">' + data.belum + '</span>';
+            }
+        }
+
+        var tdSubtotalBayar = tr.querySelector('.col-subtotal-bayar');
+        if (tdSubtotalBayar) {
+            tdSubtotalBayar.textContent = formatRupiah(data.subtotalBayar);
+        }
+
+        var tdSubtotalBon = tr.querySelector('.col-subtotal-bon');
+        if (tdSubtotalBon) {
+            tdSubtotalBon.textContent = formatRupiah(data.subtotalBon);
+            if (data.subtotalBon <= 0 || data.harga === 0) {
+                tdSubtotalBon.style.color = '#10b981';
+            } else {
+                tdSubtotalBon.style.color = '#dc2626';
+            }
+        }
+
+        var inputHarga = tr.querySelector('.col-harga-unit input');
+        if (inputHarga) {
+            var harga = item.hargaUnit.toString().replace(/[^0-9]/g, '');
+            if (harga && parseInt(harga) > 0) {
+                inputHarga.value = formatRupiahInput(parseInt(harga));
+            } else {
+                inputHarga.value = '';
+            }
+        }
+
+        var inputTerbayar = tr.querySelector('.col-terbayar input');
+        if (inputTerbayar) {
+            if (item.terbayar !== undefined && item.terbayar !== null && item.terbayar.toString().trim() !== '') {
+                inputTerbayar.value = item.terbayar;
+            } else {
+                inputTerbayar.value = '';
+            }
+        }
+
+        var inputJumlah = tr.querySelector('.col-jumlah input');
+        if (inputJumlah) {
+            if (item.jumlah !== undefined && item.jumlah !== null && item.jumlah.toString().trim() !== '') {
+                inputJumlah.value = item.jumlah;
+            } else {
+                inputJumlah.value = '';
+            }
+        }
+    }
+
+    function renderTable() {
+        var tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        var totalQty = 0;
+        var totalSubtotalBayar = 0;
+        var totalTerbayar = 0;
+        var totalSubtotalBon = 0;
+
+        for (var idx = 0; idx < items.length; idx++) {
+            var item = items[idx];
+            var tr = document.createElement('tr');
+
+            var tdNo = document.createElement('td');
+            tdNo.className = 'col-no';
+            tdNo.textContent = idx + 1;
+            tr.appendChild(tdNo);
+
+            var tdNama = document.createElement('td');
+            tdNama.className = 'col-nama';
+            var inputNama = document.createElement('input');
+            inputNama.type = 'text';
+            inputNama.value = item.nama || '';
+            inputNama.placeholder = 'Ketik nama menu...';
+            inputNama.addEventListener('input', (function(index) {
+                return function() {
+                    items[index].nama = this.value;
+                    saveToStorage(currentDate);
+                };
+            })(idx));
+            tdNama.appendChild(inputNama);
+            tr.appendChild(tdNama);
+
+            var tdJumlah = document.createElement('td');
+            tdJumlah.className = 'col-jumlah';
+            var inputJumlah = document.createElement('input');
+            inputJumlah.type = 'text';
+            inputJumlah.inputMode = 'numeric';
+            inputJumlah.value = item.jumlah !== undefined && item.jumlah !== null && item.jumlah.toString().trim() !== '' ? item.jumlah : '';
+            inputJumlah.placeholder = '0';
+            inputJumlah.id = 'jumlah-' + idx;
+            inputJumlah.addEventListener('input', (function(index, row) {
+                return function() {
+                    var val = this.value.replace(/[^0-9]/g, '');
+                    if (val === '') {
+                        items[index].jumlah = '';
+                        this.value = '';
+                    } else {
+                        items[index].jumlah = parseInt(val) || 0;
+                        this.value = items[index].jumlah;
+                    }
+                    updateRow(row, index);
+                    updateTotal();
+                    saveToStorage(currentDate);
+                };
+            })(idx, tr));
+            tdJumlah.appendChild(inputJumlah);
+            tr.appendChild(tdJumlah);
+
+            var tdTerbayar = document.createElement('td');
+            tdTerbayar.className = 'col-terbayar';
+            var inputTerbayar = document.createElement('input');
+            inputTerbayar.type = 'text';
+            inputTerbayar.inputMode = 'numeric';
+            inputTerbayar.value = item.terbayar !== undefined && item.terbayar !== null && item.terbayar.toString().trim() !== '' ? item.terbayar : '';
+            inputTerbayar.placeholder = '0';
+            inputTerbayar.id = 'terbayar-' + idx;
+            inputTerbayar.addEventListener('input', (function(index, row) {
+                return function() {
+                    var val = this.value.replace(/[^0-9]/g, '');
+                    if (val === '') {
+                        items[index].terbayar = '';
+                        this.value = '';
+                    } else {
+                        items[index].terbayar = val;
+                        this.value = val;
+                    }
+                    updateRow(row, index);
+                    updateTotal();
+                    saveToStorage(currentDate);
+                };
+            })(idx, tr));
+            tdTerbayar.appendChild(inputTerbayar);
+            tr.appendChild(tdTerbayar);
+
+            var tdBelum = document.createElement('td');
+            tdBelum.className = 'col-belum-bayar';
+            tdBelum.id = 'belum-' + idx;
+            tr.appendChild(tdBelum);
+
+            var tdHargaUnit = document.createElement('td');
+            tdHargaUnit.className = 'col-harga-unit';
+            var inputHargaUnit = document.createElement('input');
+            inputHargaUnit.type = 'text';
+            var hargaAwal = item.hargaUnit ? item.hargaUnit.toString().replace(/[^0-9]/g, '') : '';
+            inputHargaUnit.value = (hargaAwal && parseInt(hargaAwal) > 0) ? formatRupiahInput(parseInt(hargaAwal)) : '';
+            inputHargaUnit.placeholder = 'Rp 0';
+            inputHargaUnit.id = 'harga-' + idx;
+            
+            inputHargaUnit.addEventListener('focus', function() {
+                var val = this.value.replace(/[^0-9]/g, '');
+                if (val) {
+                    this.value = val;
+                } else {
+                    this.value = '';
+                }
+            });
+            
+            inputHargaUnit.addEventListener('input', (function(index, row) {
+                return function() {
+                    var val = this.value.replace(/[^0-9]/g, '');
+                    if (val) {
+                        items[index].hargaUnit = val;
+                    } else {
+                        items[index].hargaUnit = '';
+                    }
+                    updateRow(row, index);
+                    updateTotal();
+                    saveToStorage(currentDate);
+                };
+            })(idx, tr));
+            
+            inputHargaUnit.addEventListener('blur', (function(index, row) {
+                return function() {
+                    var val = this.value.replace(/[^0-9]/g, '');
+                    if (val && parseInt(val) > 0) {
+                        this.value = formatRupiahInput(parseInt(val));
+                        items[index].hargaUnit = val;
+                    } else {
+                        this.value = '';
+                        items[index].hargaUnit = '';
+                    }
+                    updateRow(row, index);
+                    updateTotal();
+                    saveToStorage(currentDate);
+                };
+            })(idx, tr));
+            
+            tdHargaUnit.appendChild(inputHargaUnit);
+            tr.appendChild(tdHargaUnit);
+
+            var tdSubtotalBayar = document.createElement('td');
+            tdSubtotalBayar.className = 'col-subtotal-bayar';
+            tdSubtotalBayar.id = 'subtotalbayar-' + idx;
+            tr.appendChild(tdSubtotalBayar);
+
+            var tdSubtotalBon = document.createElement('td');
+            tdSubtotalBon.className = 'col-subtotal-bon';
+            tdSubtotalBon.id = 'subtotalbon-' + idx;
+            tr.appendChild(tdSubtotalBon);
+
+            var tdTambah = document.createElement('td');
+            tdTambah.className = 'col-tambah';
+            var btnTambah = document.createElement('button');
+            btnTambah.className = 'btn-tambah';
+            btnTambah.textContent = '+';
+            btnTambah.title = 'Jual +1';
+            btnTambah.addEventListener('click', (function(index, row) {
+                return function() {
+                    var currentVal = parseInt(items[index].jumlah) || 0;
+                    items[index].jumlah = currentVal + 1;
+                    updateRow(row, index);
+                    updateTotal();
+                    saveToStorage(currentDate);
+                    showToast('➕ ' + (items[index].nama || 'Menu') + ' Jual +1');
+                };
+            })(idx, tr));
+            tdTambah.appendChild(btnTambah);
+            tr.appendChild(tdTambah);
+
+            var tdKurang = document.createElement('td');
+            tdKurang.className = 'col-kurang';
+            var btnKurang = document.createElement('button');
+            btnKurang.className = 'btn-kurang';
+            btnKurang.textContent = '−';
+            btnKurang.title = 'Bayar +1';
+            btnKurang.addEventListener('click', (function(index, row) {
+                return function() {
+                    var currentBayar = parseInt(items[index].terbayar.toString().replace(/[^0-9]/g, '')) || 0;
+                    var newBayar = currentBayar + 1;
+                    items[index].terbayar = newBayar.toString();
+                    updateRow(row, index);
+                    updateTotal();
+                    saveToStorage(currentDate);
+                    showToast('➖ ' + (items[index].nama || 'Menu') + ' Bayar +1');
+                };
+            })(idx, tr));
+            tdKurang.appendChild(btnKurang);
+            tr.appendChild(tdKurang);
+
+            tbody.appendChild(tr);
+            updateRow(tr, idx);
+
+            var data = hitungData(item.jumlah, item.terbayar, item.hargaUnit);
+            totalQty += data.qty;
+            totalSubtotalBayar += data.subtotalBayar;
+            totalTerbayar += data.bayar;
+            totalSubtotalBon += data.subtotalBon;
+        }
+
+        document.getElementById('totalBarang').textContent = totalQty;
+        document.getElementById('totalPendapatan').textContent = formatRupiah(totalSubtotalBayar);
+        document.getElementById('totalTerbayar').textContent = totalTerbayar;
+        document.getElementById('totalBon').textContent = formatRupiah(totalSubtotalBon);
+        document.getElementById('jumlahMenu').textContent = items.length;
+        saveToStorage(currentDate);
+    }
+
+    function updateTotal() {
+        var totalQty = 0;
+        var totalSubtotalBayar = 0;
+        var totalTerbayar = 0;
+        var totalSubtotalBon = 0;
+
+        for (var i = 0; i < items.length; i++) {
+            var data = hitungData(items[i].jumlah, items[i].terbayar, items[i].hargaUnit);
+            totalQty += data.qty;
+            totalSubtotalBayar += data.subtotalBayar;
+            totalTerbayar += data.bayar;
+            totalSubtotalBon += data.subtotalBon;
+        }
+
+        document.getElementById('totalBarang').textContent = totalQty;
+        document.getElementById('totalPendapatan').textContent = formatRupiah(totalSubtotalBayar);
+        document.getElementById('totalTerbayar').textContent = totalTerbayar;
+        document.getElementById('totalBon').textContent = formatRupiah(totalSubtotalBon);
+        document.getElementById('jumlahMenu').textContent = items.length;
+    }
+
+    function tambahBaris() {
+        items.push({ nama: '', jumlah: '', terbayar: '', hargaUnit: '' });
+        renderTable();
+        showToast('✅ Item baru ditambahkan!');
+    }
+
+    function resetHariIni() {
+        if (confirm('Yakin ingin mereset data Jual dan Bayar untuk hari ini?\n(Data Menu dan Harga/Unit akan tetap dipertahankan)')) {
+            resetJualBayar();
+            showToast('🔄 Data Jual dan Bayar telah direset!');
+            showResetNotification('🔄 Data Jual dan Bayar telah direset manual!');
+        }
+    }
+
+    function showResetNotification(message) {
+        var notif = document.getElementById('resetNotification');
+        document.getElementById('resetMessage').textContent = message;
+        notif.classList.add('show');
+        setTimeout(function() {
+            notif.classList.remove('show');
+        }, 5000);
+    }
+
+    function closeResetNotification() {
+        document.getElementById('resetNotification').classList.remove('show');
+    }
+
+    function openHistory() {
+        document.getElementById('historyModal').classList.add('active');
+        renderHistory();
+    }
+
+    function closeHistory() {
+        document.getElementById('historyModal').classList.remove('active');
+    }
+
+    function renderHistory() {
+        var container = document.getElementById('historyList');
+        var dates = getAllDates();
+        var today = getToday();
+
+        if (dates.length === 0) {
+            container.innerHTML = '<div class="history-empty">Belum ada riwayat. Simpan data terlebih dahulu.</div>';
+            return;
+        }
+
+        var html = '<ul class="history-list">';
+        for (var i = 0; i < dates.length; i++) {
+            var tgl = dates[i];
+            var key = getStorageKey(tgl);
+            var data = localStorage.getItem(key);
+            var count = 0;
+            try {
+                var parsed = JSON.parse(data);
+                count = parsed.length;
+            } catch (e) {}
+
+            var isToday = (tgl === today);
+            var isCurrent = (tgl === currentDate) ? ' active-date' : '';
+            var todayTag = isToday ? ' <span class="today-tag">Hari Ini</span>' : '';
+
+            html += '<li onclick="loadHistoryDate(\'' + tgl + '\')" class="' + isCurrent + '">';
+            html += '<span class="tanggal-item">' + formatTanggal(tgl) + todayTag + '</span>';
+            html += '<span class="jumlah-item">' + count + ' item</span>';
+            html += '</li>';
+        }
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    function loadHistoryDate(tgl) {
+        currentDate = tgl;
+        loadData(tgl);
+        renderTable();
+        closeHistory();
+        showToast('📅 Menampilkan data: ' + formatTanggal(tgl));
+        document.getElementById('tanggalSaatIni').textContent = 'Tanggal: ' + tgl;
+    }
+
+    function clearAllHistory() {
+        if (confirm('Yakin ingin menghapus SEMUA riwayat data penjualan?')) {
+            var dates = getAllDates();
+            for (var i = 0; i < dates.length; i++) {
+                localStorage.removeItem(getStorageKey(dates[i]));
+            }
+            localStorage.removeItem('lastDate');
+            renderHistory();
+            currentDate = getToday();
+            loadData(currentDate);
+            renderTable();
+            document.getElementById('tanggalSaatIni').textContent = 'Tanggal: ' + currentDate;
+            showToast('🗑️ Semua riwayat telah dihapus!');
+        }
+    }
+
+    function showToast(msg) {
+        var toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(function() {
+            toast.classList.remove('show');
+        }, 2500);
+    }
+
+    function checkDayChange() {
+        var today = getToday();
+        if (today !== currentDate) {
+            var oldDate = currentDate;
+            currentDate = today;
+            saveToStorage(oldDate);
+            for (var i = 0; i < items.length; i++) {
+                items[i].jumlah = '';
+                items[i].terbayar = '';
+            }
+            renderTable();
+            localStorage.setItem('lastDate', today);
+            updateTanggalDisplay();
+            showResetNotification('🔄 Data Jual dan Bayar telah direset otomatis untuk ' + formatTanggal(today));
+            showToast('🔄 Selamat pagi! Data Jual dan Bayar telah direset untuk hari ini.');
+            document.getElementById('statusDot').classList.add('warning');
+            setTimeout(function() {
+                document.getElementById('statusDot').classList.remove('warning');
+            }, 3000);
+        }
+    }
+
+    function startDayChecker() {
+        setInterval(function() {
+            checkDayChange();
+        }, 1000);
+    }
+
+    var today = getToday();
+    var savedLastDate = localStorage.getItem('lastDate') || today;
+    
+    if (savedLastDate !== today) {
+        localStorage.setItem('lastDate', today);
+        loadData(today);
+        for (var i = 0; i < items.length; i++) {
+            items[i].jumlah = '';
+            items[i].terbayar = '';
+        }
+        renderTable();
+        showResetNotification('🔄 Data Jual dan Bayar telah direset otomatis untuk ' + formatTanggal(today));
+        showToast('🔄 Selamat datang! Data Jual dan Bayar baru untuk hari ini.');
+    } else {
+        loadData(today);
+    }
+    
+    currentDate = today;
+    renderTable();
+    startDayChecker();
+
+    document.getElementById('historyModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeHistory();
+        }
+    });
+
+    window.addEventListener('beforeunload', function() {
+        saveToStorage(currentDate);
+        localStorage.setItem('lastDate', currentDate);
+    });
+</script>
+</body>
+</html>
